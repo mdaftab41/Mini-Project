@@ -627,4 +627,115 @@ from sklearn.cluster import KMeans
 dataset = None
 active_button = None  # To track the currently active button
 
+# Tkinter GUI window setup
+root = tk.Tk()
+root.title("Crime Analysis Tool")
+
+# Variable to keep track of fullscreen status
+is_fullscreen = True
+
+# Function to toggle fullscreen
+def toggle_fullscreen(event=None):
+    global is_fullscreen
+    is_fullscreen = not is_fullscreen  # Toggle the boolean flag
+    root.attributes('-fullscreen', is_fullscreen)
+
+# Function to exit fullscreen (with the Esc key)
+def exit_fullscreen(event=None):
+    global is_fullscreen
+    is_fullscreen = False
+    root.attributes('-fullscreen', False)
+
+# Make the window fullscreen initially
+root.attributes('-fullscreen', True)
+
+# Bind the Esc key to exit fullscreen
+root.bind("<Escape>", exit_fullscreen)
+
+# Create a Canvas to hold the background image
+canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  # Full screen size
+canvas.pack(fill="both", expand=True)
+
+# Load the background image from an online URL
+def load_background_image():
+    image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()  # Check for HTTP errors
+        bg_image = Image.open(BytesIO(response.content))
+        bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.LANCZOS)
+        bg_image = ImageTk.PhotoImage(bg_image)
+        canvas.create_image(0, 0, image=bg_image, anchor="nw")
+        return bg_image  # Return the image to keep a reference
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load background image: {e}")
+
+# Function to fetch and display crime data based on user input
+def fetch_crime_data():
+    state_or_city = search_entry.get().strip().upper()
+    if not state_or_city:
+        messagebox.showwarning("Input Error", "Please enter a state or city name.")
+        return
+
+    try:
+        filtered_data = dataset[dataset['STATE/UT'].str.upper() == state_or_city]
+        if filtered_data.empty:
+            messagebox.showinfo("No Data", f"No crime data found for '{state_or_city}'.")
+            return
+        
+        total_crime = filtered_data['TOTAL IPC CRIMES'].sum()
+        messagebox.showinfo("Crime Data", f"Total Crime in {state_or_city}: {total_crime}")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to fetch data: {e}")
+
+# Create a Frame to hold the buttons and align them horizontally
+def create_button_frame():
+    button_frame = tk.Frame(canvas, bg='')
+    button_frame.place(relx=0.5, rely=0.01, anchor='n')
+
+    load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
+    load_button.pack(side='left', padx=(0, 10))
+
+    search_label = tk.Label(button_frame, text="Enter State/City:", fg='black')
+    search_label.pack(side='left')
+
+    global search_entry  # Declare search_entry as global to access it in other functions
+    search_entry = tk.Entry(button_frame, width=15)
+    search_entry.pack(side='left', padx=(5, 10))
+
+    search_button = tk.Button(button_frame, text="Search", command=fetch_crime_data, bg='black', fg='white', height=2)
+    search_button.pack(side='left', padx=10)
+
+    toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
+    toggle_button.pack(side='left', padx=(10, 0))
+
+# Function to load the image
+def load_criminal_image(image_path):
+    try:
+        img = Image.open(image_path)
+        img = img.resize((200, 200), Image.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        
+        img_label = tk.Label(root, image=img)
+        img_label.image = img
+        img_label.pack(pady=10)
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load image: {e}")
+
+def load_dataset():
+    global dataset
+    filepath = filedialog.askopenfilename(title="Select a CSV file", filetypes=(("CSV files", "*.csv"),))
+    if filepath:
+        try:
+            dataset = pd.read_csv(filepath)
+            messagebox.showinfo("Success", "Dataset loaded successfully!")
+            load_criminal_image("criminal.png")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load dataset: {e}")
+
+# Load the background image and create the button frame
+bg_image = load_background_image()
+create_button_frame()
+
+root.mainloop()
  
