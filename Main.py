@@ -612,3 +612,19 @@
 # create_button_frame()
 
 # root.mainloop()
+
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from PIL import Image, ImageTk
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import requests
+from io import BytesIO
+from sklearn.cluster import KMeans
+
+# Global variable for the dataset and for active button
+dataset = None
+active_button = None  # To track the currently active button
+
+ 
