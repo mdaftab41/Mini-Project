@@ -618,10 +618,9 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import requests
 from io import BytesIO
+import matplotlib.pyplot as plt
 
 # Global variable for the dataset
 dataset = None
@@ -663,26 +662,55 @@ def create_button_frame():
     button_frame = tk.Frame(canvas, bg='')
     button_frame.place(relx=0.5, rely=0.01, anchor='n')  
 
+    # Load Dataset Button
     load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
-    load_button.pack(side='left', padx=(0, 10))
+    load_button.pack(pady=5)  # Added padding for spacing
 
-    search_button = tk.Button(button_frame, text="Search", command=search_crime_data, bg='black', fg='white', height=2)
-    search_button.pack(side='left', padx=10)
+    # Search Entry
+    search_entry = tk.Entry(button_frame, width=30, font=('Arial', 14))
+    search_entry.pack(pady=5)  # Added padding for spacing
+
+    # Search Button
+    search_button = tk.Button(button_frame, text="Search", command=lambda: fetch_crime_data(search_entry.get()), bg='black', fg='white', height=2)
+    search_button.pack(pady=5)  # Added padding for spacing
+
+    # State vs Total Crime Button
+    plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
+    plot_button.pack(pady=5)  # Added padding for spacing
+
+    # Crime Type vs Rate Button
+    crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
+    crime_type_button.pack(pady=5)  # Added padding for spacing
+
+    # Pie Chart of Crime Rate Button
+    pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
+    pie_chart_button.pack(pady=5)  # Added padding for spacing
+
+    # State Safety Classification Button
+    classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
+    classification_button.pack(pady=5)  # Added padding for spacing
+
+    # Crime Trend per State Button
+    trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
+    trend_button.pack(pady=5)  # Added padding for spacing
+
+    # Toggle Fullscreen Button
+    toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
+    toggle_button.pack(pady=(10, 0))  # Added padding for spacing
 
 # Function to search for crime data based on user input and API call
-def search_crime_data():
-    search_query = search_entry.get()
-    if search_query:
+def fetch_crime_data(query):
+    if query:
         try:
             # Replace with the actual API URL for crime data in India
-            api_url = f"https://api.ncrb.gov.in/crime-data?state={search_query}"  
+            api_url = f"https://api.ncrb.gov.in/crime-data?state={query}"  
             response = requests.get(api_url)
             response.raise_for_status()
             crime_data = response.json()
             if crime_data:
                 display_crime_data(crime_data)
             else:
-                messagebox.showinfo("Search Results", f"No records found for '{search_query}'.")
+                messagebox.showinfo("Search Results", f"No records found for '{query}'.")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to fetch data from API: {e}")
     else:
@@ -726,16 +754,28 @@ def show_state_vs_crime():
     except Exception as e:
         messagebox.showerror("Error", f"Failed to plot data: {e}")
 
+# Placeholder functions for additional buttons
+def show_crime_type_vs_rate():
+    messagebox.showinfo("Info", "Showing Crime Type vs Rate functionality is not implemented yet.")
+
+def show_crime_rate_pie_chart():
+    messagebox.showinfo("Info", "Showing Pie Chart of Crime Rate functionality is not implemented yet.")
+
+def show_state_safety_classification():
+    messagebox.showinfo("Info", "Showing State Safety Classification functionality is not implemented yet.")
+
+def show_crime_trend_per_state():
+    messagebox.showinfo("Info", "Showing Crime Trend per State functionality is not implemented yet.")
+
+def toggle_fullscreen():
+    root.attributes("-fullscreen", not root.attributes("-fullscreen"))
+
 # Create Canvas for background
 canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  
 canvas.pack(fill="both", expand=True)
 
 # Load the background image
 bg_image = load_background_image()
-
-# Create a search entry field
-search_entry = tk.Entry(root, width=30, font=('Arial', 14))
-search_entry.pack(pady=10)
 
 # Create button frame
 create_button_frame()
