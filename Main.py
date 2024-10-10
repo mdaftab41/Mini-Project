@@ -406,284 +406,362 @@
 
 
  
-# import tkinter as tk
-# from tkinter import filedialog, messagebox
-# from PIL import Image, ImageTk  # Importing Pillow for image handling
-# import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import requests
-# from io import BytesIO
-# from sklearn.cluster import KMeans
-
-# # Global variable for the dataset and for active button
-# dataset = None
-# active_button = None  # To track the currently active button
-
-# # Tkinter GUI window setup
-# root = tk.Tk()
-# root.title("Crime Analysis Tool")
-
-# # Variable to keep track of fullscreen status
-# is_fullscreen = True
-
-# # Function to toggle fullscreen
-# def toggle_fullscreen(event=None):
-#     global is_fullscreen
-#     is_fullscreen = not is_fullscreen  # Toggle the boolean flag
-#     root.attributes('-fullscreen', is_fullscreen)
-
-# # Function to exit fullscreen (with the Esc key)
-# def exit_fullscreen(event=None):
-#     global is_fullscreen
-#     is_fullscreen = False
-#     root.attributes('-fullscreen', False)
-
-# # Make the window fullscreen initially
-# root.attributes('-fullscreen', True)
-
-# # Bind the Esc key to exit fullscreen
-# root.bind("<Escape>", exit_fullscreen)
-
-# # Create a Canvas to hold the background image
-# canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  # Full screen size
-# canvas.pack(fill="both", expand=True)
-
-# # Load the background image from an online URL
-# def load_background_image():
-#     image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"  # Replace with your online image URL
-#     try:
-#         response = requests.get(image_url)
-#         response.raise_for_status()  # Check for HTTP errors
-#         bg_image = Image.open(BytesIO(response.content))  # Open the image from the response
-#         bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.LANCZOS)  # Resize to fit canvas
-#         bg_image = ImageTk.PhotoImage(bg_image)
-
-#         # Create a background image on the canvas
-#         canvas.create_image(0, 0, image=bg_image, anchor="nw")
-#         return bg_image  # Return the image to keep a reference
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to load background image: {e}")
-
-# # Create a Frame to hold the buttons and align them horizontally
-# def create_button_frame():
-#     button_frame = tk.Frame(canvas, bg='')  # Set the background to empty for transparency
-#     button_frame.place(relx=0.5, rely=0.01, anchor='n')  # Position the button frame at the top center
-
-#     # Adding Buttons in a single line (like a navigation bar)
-#     load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
-#     load_button.pack(side='left', padx=(0, 10))  # Set padding for left button
-
-#     plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
-#     plot_button.pack(side='left', padx=10)
-
-#     crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
-#     crime_type_button.pack(side='left', padx=10)
-
-#     pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
-#     pie_chart_button.pack(side='left', padx=10)
-
-#     classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
-#     classification_button.pack(side='left', padx=10)
-
-#     trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
-#     trend_button.pack(side='left', padx=10)
-
-#     # Add a button to toggle fullscreen
-#     toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
-#     toggle_button.pack(side='left', padx=(10, 0))  # Set padding for the toggle button
-
-# # Function to load the image
-# def load_criminal_image(image_path):
-#     try:
-#         # Load and resize the image
-#         img = Image.open(image_path)
-#         img = img.resize((200, 200), Image.LANCZOS)  # Resize image to fit the label
-#         img = ImageTk.PhotoImage(img)
-        
-#         # Create a label to display the image
-#         img_label = tk.Label(root, image=img)
-#         img_label.image = img  # Keep a reference to avoid garbage collection
-#         img_label.pack(pady=10)  # Add some padding around the image
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to load image: {e}")
-
-# def load_dataset():
-#     global dataset
-#     filepath = filedialog.askopenfilename(title="Select a CSV file", filetypes=(("CSV files", "*.csv"),))
-#     if filepath:
-#         try:
-#             dataset = pd.read_csv(filepath)
-#             messagebox.showinfo("Success", "Dataset loaded successfully!")
-#             load_criminal_image("criminal.png")  # Load the criminal image after dataset is loaded
-#         except Exception as e:
-#             messagebox.showerror("Error", f"Failed to load dataset: {e}")
-
-# def show_state_vs_crime():
-#     try:
-#         df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
-#         states = df_sum_by_state['STATE/UT']
-#         total_crime = df_sum_by_state['TOTAL IPC CRIMES']
-        
-#         fig, ax = plt.subplots()
-#         ax.bar(states, total_crime)
-#         plt.xticks(rotation=90, ha='right')
-#         plt.title('State vs Total Crime Over 10 Years')
-#         plt.xlabel('State/UT')
-#         plt.ylabel('Total IPC Crimes')
-#         plt.tight_layout()
-#         plt.show()
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to plot data: {e}")
-
-# def show_crime_type_vs_rate():
-#     try:
-#         sum_column = dataset.sum(axis=0)
-#         crime_rates = sum_column[2:30]
-#         crimes = dataset.columns.values[2:30]
-
-#         fig, ax = plt.subplots()
-#         ax.bar(crimes, crime_rates)
-#         plt.xticks(rotation=90, ha='right')
-#         plt.title('Type of Crime vs Rate of Crime')
-#         plt.xlabel('Crime Type')
-#         plt.ylabel('Total Occurrences')
-#         plt.tight_layout()
-#         plt.show()
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to generate crime rate graph: {e}")
-
-# def show_crime_rate_pie_chart():
-#     try:
-#         df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
-#         states = df_sum_by_state['STATE/UT']
-#         total_crime = df_sum_by_state['TOTAL IPC CRIMES']
-
-#         colors = plt.cm.tab20.colors  # Use a colormap for more colors
-#         plt.figure(figsize=(8,8))
-#         plt.pie(total_crime, labels=states, colors=colors, autopct='%1.1f%%', startangle=140)
-#         plt.title('Pie Chart of Crime Rate per State')
-#         plt.axis('equal')
-#         plt.tight_layout()
-#         plt.show()
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to generate pie chart: {e}")
-
-# def show_state_safety_classification():
-#     try:
-#         total_crime_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
-#         crime_data = total_crime_by_state['TOTAL IPC CRIMES'].values.reshape(-1,1)
-#         kmeans = KMeans(n_clusters=2, random_state=42)
-#         y_kmeans = kmeans.fit_predict(crime_data)
-#         total_crime_by_state['Safety Classification'] = y_kmeans
-#         fig, ax = plt.subplots()
-#         ax.bar(total_crime_by_state['STATE/UT'], total_crime_by_state['Safety Classification'])
-#         plt.xticks(rotation=90, ha='right')
-#         plt.title('State Safety Classification (0: Safe, 1: Unsafe)')
-#         plt.xlabel('State/UT')
-#         plt.ylabel('Classification')
-#         plt.tight_layout()
-#         plt.show()
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to classify states: {e}")
-
-# def show_crime_trend_per_state():
-#     try:
-#         states = dataset['STATE/UT'].unique()
-#         years = sorted(dataset['YEAR'].unique())
-
-#         for state in states:
-#             state_data = dataset[dataset['STATE/UT'] == state]
-#             total_crime_per_year = state_data.groupby('YEAR')['TOTAL IPC CRIMES'].sum()
-
-#             plt.figure()
-#             plt.plot(years, [total_crime_per_year.get(year, 0) for year in years], marker='o')
-#             plt.title(f'Total IPC Crimes Over Years in {state}')
-#             plt.xlabel('Year')
-#             plt.ylabel('Total IPC Crimes')
-#             plt.xticks(years, rotation=45)
-#             plt.tight_layout()
-#             plt.show()
-#     except Exception as e:
-#         messagebox.showerror("Error", f"Failed to plot crime trends: {e}")
-
-# # Load the background image and create the button frame
-# bg_image = load_background_image()
-# create_button_frame()
-
-# root.mainloop()
 import tkinter as tk
-from tkinter import messagebox
-import requests
+from tkinter import filedialog, messagebox
+from PIL import Image, ImageTk  # Importing Pillow for image handling
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import requests
+from io import BytesIO
+from sklearn.cluster import KMeans
+
+# Global variable for the dataset and for active button
+dataset = None
+active_button = None  # To track the currently active button
 
 # Tkinter GUI window setup
 root = tk.Tk()
-root.title("City Crime Rate Analysis")
-root.geometry("600x500")
+root.title("Crime Analysis Tool")
 
-# Function to fetch crime data from an API and analyze safety
-def fetch_crime_data(city):
+# Variable to keep track of fullscreen status
+is_fullscreen = True
+
+# Function to toggle fullscreen
+def toggle_fullscreen(event=None):
+    global is_fullscreen
+    is_fullscreen = not is_fullscreen  # Toggle the boolean flag
+    root.attributes('-fullscreen', is_fullscreen)
+
+# Function to exit fullscreen (with the Esc key)
+def exit_fullscreen(event=None):
+    global is_fullscreen
+    is_fullscreen = False
+    root.attributes('-fullscreen', False)
+
+# Make the window fullscreen initially
+root.attributes('-fullscreen', True)
+
+# Bind the Esc key to exit fullscreen
+root.bind("<Escape>", exit_fullscreen)
+
+# Create a Canvas to hold the background image
+canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  # Full screen size
+canvas.pack(fill="both", expand=True)
+
+# Load the background image from an online URL
+def load_background_image():
+    image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"  # Replace with your online image URL
     try:
-        # Placeholder API for testing
-        api_url = f"https://jsonplaceholder.typicode.com/posts/1"
-        response = requests.get(api_url)
-        response.raise_for_status()
-        crime_data = response.json()
-        
-        # Extracting data and displaying it
-        user_id = crime_data.get("userId", "Unknown")
-        post_id = crime_data.get("id", "Unknown")
-        title = crime_data.get("title", "No title")
-        body = crime_data.get("body", "No content")
-        
-        formatted_data = (
-            f"Crime Data for {city}:\n\n"
-            f"User ID: {user_id}\n"
-            f"Post ID: {post_id}\n"
-            f"Title: {title}\n"
-            f"Body: {body}\n\n"
-        )
-        
-        # Assess safety based on placeholder content
-        if "reprehenderit" in body:
-            safety_status = f"{city} might not be a safe place."
-        else:
-            safety_status = f"{city} seems safe based on available data."
-        
-        result = formatted_data + safety_status
-        messagebox.showinfo("Crime Data", result)
-        
-        # Simulate yearly crime rate data for demonstration
-        yearly_data = {"2017": 120, "2018": 130, "2019": 125, "2020": 140, "2021": 135, "2022": 145}
-        show_yearly_crime_rate(yearly_data, city)
-        
-    except requests.exceptions.RequestException as e:
-        messagebox.showerror("Error", f"Failed to fetch data from API:\n{e}")
+        response = requests.get(image_url)
+        response.raise_for_status()  # Check for HTTP errors
+        bg_image = Image.open(BytesIO(response.content))  # Open the image from the response
+        bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.LANCZOS)  # Resize to fit canvas
+        bg_image = ImageTk.PhotoImage(bg_image)
 
-# Function to display a yearly crime rate graph
-def show_yearly_crime_rate(yearly_data, city):
-    years = list(yearly_data.keys())
-    rates = list(yearly_data.values())
+        # Create a background image on the canvas
+        canvas.create_image(0, 0, image=bg_image, anchor="nw")
+        return bg_image  # Return the image to keep a reference
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load background image: {e}")
 
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(years, rates, color='skyblue')
-    ax.set_title(f'Yearly Crime Rate in {city}')
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Crime Rate')
+# Create a Frame to hold the buttons and align them horizontally
+def create_button_frame():
+    button_frame = tk.Frame(canvas, bg='')  # Set the background to empty for transparency
+    button_frame.place(relx=0.5, rely=0.01, anchor='n')  # Position the button frame at the top center
 
-    # Embed the plot in the Tkinter window
-    canvas = FigureCanvasTkAgg(fig, root)
-    canvas.get_tk_widget().pack(pady=20)
-    canvas.draw()
+    # Adding Buttons in a single line (like a navigation bar)
+    load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
+    load_button.pack(side='left', padx=(0, 10))  # Set padding for left button
 
-# GUI Elements
-search_entry = tk.Entry(root, width=30, font=('Arial', 14))
-search_entry.pack(pady=20)
+    plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
+    plot_button.pack(side='left', padx=10)
 
-search_button = tk.Button(root, text="Analyze Safety", command=lambda: fetch_crime_data(search_entry.get()))
-search_button.pack(pady=20)
+    crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
+    crime_type_button.pack(side='left', padx=10)
 
-# Start the GUI main loop
+    pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
+    pie_chart_button.pack(side='left', padx=10)
+
+    classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
+    classification_button.pack(side='left', padx=10)
+
+    trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
+    trend_button.pack(side='left', padx=10)
+
+    # Add a button to toggle fullscreen
+    toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
+    toggle_button.pack(side='left', padx=(10, 0))  # Set padding for the toggle button
+
+# Function to load the image
+def load_criminal_image(image_path):
+    try:
+        # Load and resize the image
+        img = Image.open(image_path)
+        img = img.resize((200, 200), Image.LANCZOS)  # Resize image to fit the label
+        img = ImageTk.PhotoImage(img)
+        
+        # Create a label to display the image
+        img_label = tk.Label(root, image=img)
+        img_label.image = img  # Keep a reference to avoid garbage collection
+        img_label.pack(pady=10)  # Add some padding around the image
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load image: {e}")
+
+def load_dataset():
+    global dataset
+    filepath = filedialog.askopenfilename(title="Select a CSV file", filetypes=(("CSV files", "*.csv"),))
+    if filepath:
+        try:
+            dataset = pd.read_csv(filepath)
+            messagebox.showinfo("Success", "Dataset loaded successfully!")
+            load_criminal_image("criminal.png")  # Load the criminal image after dataset is loaded
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load dataset: {e}")
+
+def show_state_vs_crime():
+    try:
+        df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
+        states = df_sum_by_state['STATE/UT']
+        total_crime = df_sum_by_state['TOTAL IPC CRIMES']
+        
+        fig, ax = plt.subplots()
+        ax.bar(states, total_crime)
+        plt.xticks(rotation=90, ha='right')
+        plt.title('State vs Total Crime Over 10 Years')
+        plt.xlabel('State/UT')
+        plt.ylabel('Total IPC Crimes')
+        plt.tight_layout()
+        plt.show()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to plot data: {e}")
+
+def show_crime_type_vs_rate():
+    try:
+        sum_column = dataset.sum(axis=0)
+        crime_rates = sum_column[2:30]
+        crimes = dataset.columns.values[2:30]
+
+        fig, ax = plt.subplots()
+        ax.bar(crimes, crime_rates)
+        plt.xticks(rotation=90, ha='right')
+        plt.title('Type of Crime vs Rate of Crime')
+        plt.xlabel('Crime Type')
+        plt.ylabel('Total Occurrences')
+        plt.tight_layout()
+        plt.show()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to generate crime rate graph: {e}")
+
+def show_crime_rate_pie_chart():
+    try:
+        df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
+        states = df_sum_by_state['STATE/UT']
+        total_crime = df_sum_by_state['TOTAL IPC CRIMES']
+
+        colors = plt.cm.tab20.colors  # Use a colormap for more colors
+        plt.figure(figsize=(8,8))
+        plt.pie(total_crime, labels=states, colors=colors, autopct='%1.1f%%', startangle=140)
+        plt.title('Pie Chart of Crime Rate per State')
+        plt.axis('equal')
+        plt.tight_layout()
+        plt.show()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to generate pie chart: {e}")
+
+def show_state_safety_classification():
+    try:
+        total_crime_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
+        crime_data = total_crime_by_state['TOTAL IPC CRIMES'].values.reshape(-1,1)
+        kmeans = KMeans(n_clusters=2, random_state=42)
+        y_kmeans = kmeans.fit_predict(crime_data)
+        total_crime_by_state['Safety Classification'] = y_kmeans
+        fig, ax = plt.subplots()
+        ax.bar(total_crime_by_state['STATE/UT'], total_crime_by_state['Safety Classification'])
+        plt.xticks(rotation=90, ha='right')
+        plt.title('State Safety Classification (0: Safe, 1: Unsafe)')
+        plt.xlabel('State/UT')
+        plt.ylabel('Classification')
+        plt.tight_layout()
+        plt.show()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to classify states: {e}")
+
+def show_crime_trend_per_state():
+    try:
+        states = dataset['STATE/UT'].unique()
+        years = sorted(dataset['YEAR'].unique())
+
+        for state in states:
+            state_data = dataset[dataset['STATE/UT'] == state]
+            total_crime_per_year = state_data.groupby('YEAR')['TOTAL IPC CRIMES'].sum()
+
+            plt.figure()
+            plt.plot(years, [total_crime_per_year.get(year, 0) for year in years], marker='o')
+            plt.title(f'Total IPC Crimes Over Years in {state}')
+            plt.xlabel('Year')
+            plt.ylabel('Total IPC Crimes')
+            plt.xticks(years, rotation=45)
+            plt.tight_layout()
+            plt.show()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to plot crime trends: {e}")
+
+# Load the background image and create the button frame
+bg_image = load_background_image()
+create_button_frame()
+
 root.mainloop()
+
+
+
+
+
+
+# import tkinter as tk
+# from tkinter import messagebox
+# import requests
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+# # Tkinter GUI window setup
+# root = tk.Tk()
+# root.title("City Crime Rate Analysis")
+# root.geometry("600x500")
+
+# # Function to fetch crime data from an API and analyze safety
+# def fetch_crime_data(city):
+#     try:
+#         # Placeholder API for testing
+#         api_url = f"https://jsonplaceholder.typicode.com/posts/1"
+#         response = requests.get(api_url)
+#         response.raise_for_status()
+#         crime_data = response.json()
+        
+#         # Extracting data and displaying it
+#         user_id = crime_data.get("userId", "Unknown")
+#         post_id = crime_data.get("id", "Unknown")
+#         title = crime_data.get("title", "No title")
+#         body = crime_data.get("body", "No content")
+        
+#         formatted_data = (
+#             f"Crime Data for {city}:\n\n"
+#             f"User ID: {user_id}\n"
+#             f"Post ID: {post_id}\n"
+#             f"Title: {title}\n"
+#             f"Body: {body}\n\n"
+#         )
+        
+#         # Assess safety based on placeholder content
+#         if "reprehenderit" in body:
+#             safety_status = f"{city} might not be a safe place."
+#         else:
+#             safety_status = f"{city} seems safe based on available data."
+        
+#         result = formatted_data + safety_status
+#         messagebox.showinfo("Crime Data", result)
+        
+#         # Simulate yearly crime rate data for demonstration
+#         yearly_data = {"2017": 120, "2018": 130, "2019": 125, "2020": 140, "2021": 135, "2022": 145}
+#         show_yearly_crime_rate(yearly_data, city)
+        
+#     except requests.exceptions.RequestException as e:
+#         messagebox.showerror("Error", f"Failed to fetch data from API:\n{e}")
+
+# # Function to display a yearly crime rate graph
+# def show_yearly_crime_rate(yearly_data, city):
+#     years = list(yearly_data.keys())
+#     rates = list(yearly_data.values())
+
+#     fig, ax = plt.subplots(figsize=(6, 4))
+#     ax.bar(years, rates, color='skyblue')
+#     ax.set_title(f'Yearly Crime Rate in {city}')
+#     ax.set_xlabel('Year')
+#     ax.set_ylabel('Crime Rate')
+
+#     # Embed the plot in the Tkinter window
+#     canvas = FigureCanvasTkAgg(fig, root)
+#     canvas.get_tk_widget().pack(pady=20)
+#     canvas.draw()
+
+# # GUI Elements
+# search_entry = tk.Entry(root, width=30, font=('Arial', 14))
+# search_entry.pack(pady=20)
+
+# search_button = tk.Button(root, text="Analyze Safety", command=lambda: fetch_crime_data(search_entry.get()))
+# search_button.pack(pady=20)
+
+# # Start the GUI main loop
+# root.mainloop()
+
+
+
+
+
+
+# import tkinter as tk
+# from tkinter import messagebox
+# import requests
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+# from PIL import Image, ImageTk
+# from io import BytesIO
+
+# # Tkinter GUI window setup
+# root = tk.Tk()
+# root.title("City Crime Rate Analysis")
+# root.geometry("800x600")
+
+# # Function to fetch crime data from an API and analyze safety
+# def fetch_crime_data(city):
+#     try:
+#         # Placeholder API for testing
+#         api_url = "https://jsonplaceholder.typicode.com/posts/1"
+#         response = requests.get(api_url)
+#         response.raise_for_status()
+#         crime_data = response.json()
+        
+#         # Placeholder for crime rate analysis
+#         crime_rate = 85  # Example static crime rate for demonstration
+#         if crime_rate > 80:
+#             safety_status = f"{city} is not a safe place (Crime rate: {crime_rate}%)."
+#         else:
+#             safety_status = f"{city} seems safe based on the crime rate ({crime_rate}%)."
+        
+#         messagebox.showinfo("Safety Warning", safety_status)
+        
+#         # Simulated yearly crime rate data
+#         yearly_data = {"2017": 120, "2018": 130, "2019": 125, "2020": 140, "2021": 135, "2022": 145}
+#         show_yearly_crime_rate(yearly_data, city)
+        
+#     except requests.exceptions.RequestException as e:
+#         messagebox.showerror("Error", f"Failed to fetch data from API:\n{e}")
+
+# # Function to display a yearly crime rate graph
+# def show_yearly_crime_rate(yearly_data, city):
+#     years = list(yearly_data.keys())
+#     rates = list(yearly_data.values())
+
+#     fig, ax = plt.subplots(figsize=(6, 4))
+#     ax.bar(years, rates, color='salmon')
+#     ax.set_title(f'Yearly Crime Rate in {city}')
+#     ax.set_xlabel('Year')
+#     ax.set_ylabel('Crime Rate')
+
+#     # Check if FigureCanvasTkAgg is working correctly
+#     try:
+#         canvas = FigureCanvasTkAgg(fig, root)
+#         canvas.draw()
+#         canvas.get_tk_widget().pack(pady=10)
+#     except Exception as e:
+#         messagebox.showerror("Error", f"Failed to display graph: {e}")
+
+# # GUI Elements
+# search_entry = tk.Entry(root, width=30, font=('Arial', 14))
+# search_entry.pack(pady=20)
+
+# search_button = tk.Button(root, text="Analyze Safety", command=lambda: fetch_crime_data(search_entry.get()))
+# search_button.pack(pady=20)
+
+# # Start the GUI main loop
+# root.mainloop()
