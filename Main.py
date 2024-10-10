@@ -613,7 +613,6 @@
 
 # root.mainloop()
 
-
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
@@ -673,13 +672,36 @@ def create_button_frame():
     search_button = tk.Button(button_frame, text="Search", command=lambda: fetch_crime_data(search_entry.get()), bg='black', fg='white', height=2)
     search_button.pack(pady=5)
 
+    # State vs Total Crime Button
+    plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
+    plot_button.pack(pady=5)
+
+    # Crime Type vs Rate Button
+    crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
+    crime_type_button.pack(pady=5)
+
+    # Pie Chart of Crime Rate Button
+    pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
+    pie_chart_button.pack(pady=5)
+
+    # State Safety Classification Button
+    classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
+    classification_button.pack(pady=5)
+
+    # Crime Trend per State Button
+    trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
+    trend_button.pack(pady=5)
+
+    # Toggle Fullscreen Button
+    toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
+    toggle_button.pack(pady=(10, 0))
+
 # Function to search for crime data based on user input and API call
 def fetch_crime_data(query):
-    api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"  # Use the sample API key
+    api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
     if query:
         try:
-            # Replace with the actual API URL for crime data in India and add API key as a parameter
-            api_url = f"https://api.ncrb.gov.in/crime-data?state={query}&api_key={api_key}"
+            api_url = f"https://jsonplaceholder.typicode.com/posts/1"
             response = requests.get(api_url)
             response.raise_for_status()
             crime_data = response.json()
@@ -697,6 +719,40 @@ def display_crime_data(crime_data):
     formatted_data = f"Crime Data for {crime_data.get('state_name', 'Unknown')}:\n"
     formatted_data += "\n".join(f"{k}: {v}" for k, v in crime_data.items())
     messagebox.showinfo("Crime Data", formatted_data)
+
+# Function to display the state vs total crime graph
+def show_state_vs_crime():
+    try:
+        df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
+        states = df_sum_by_state['STATE/UT']
+        total_crime = df_sum_by_state['TOTAL IPC CRIMES']
+        
+        fig, ax = plt.subplots()
+        ax.bar(states, total_crime)
+        plt.xticks(rotation=90, ha='right')
+        plt.title('State vs Total Crime Over 10 Years')
+        plt.xlabel('State/UT')
+        plt.ylabel('Total IPC Crimes')
+        plt.tight_layout()
+        plt.show()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to plot data: {e}")
+
+# Placeholder functions for additional buttons
+def show_crime_type_vs_rate():
+    messagebox.showinfo("Info", "Showing Crime Type vs Rate functionality is not implemented yet.")
+
+def show_crime_rate_pie_chart():
+    messagebox.showinfo("Info", "Showing Pie Chart of Crime Rate functionality is not implemented yet.")
+
+def show_state_safety_classification():
+    messagebox.showinfo("Info", "Showing State Safety Classification functionality is not implemented yet.")
+
+def show_crime_trend_per_state():
+    messagebox.showinfo("Info", "Showing Crime Trend per State functionality is not implemented yet.")
+
+def toggle_fullscreen():
+    root.attributes("-fullscreen", not root.attributes("-fullscreen"))
 
 # Create Canvas for background
 canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  
