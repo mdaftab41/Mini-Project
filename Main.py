@@ -612,157 +612,78 @@
 # create_button_frame()
 
 # root.mainloop()
-
 import tkinter as tk
-from tkinter import filedialog, messagebox
-from PIL import Image, ImageTk
-import pandas as pd
+from tkinter import messagebox
 import requests
-from io import BytesIO
 import matplotlib.pyplot as plt
-
-# Global variable for the dataset
-dataset = None
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Tkinter GUI window setup
 root = tk.Tk()
-root.title("Crime Analysis Tool")
+root.title("City Crime Rate Analysis")
+root.geometry("600x500")
 
-# Function to load the background image from an online URL
-def load_background_image():
-    image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"
+# Function to fetch crime data from an API and analyze safety
+def fetch_crime_data(city):
     try:
-        response = requests.get(image_url)
+        # Placeholder API for testing
+        api_url = f"https://jsonplaceholder.typicode.com/posts/1"
+        response = requests.get(api_url)
         response.raise_for_status()
-        bg_image = Image.open(BytesIO(response.content))
-        bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.LANCZOS)
-        bg_image = ImageTk.PhotoImage(bg_image)
-
-        # Create a background image on the canvas
-        canvas.create_image(0, 0, image=bg_image, anchor="nw")
-        return bg_image  
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to load background image: {e}")
-
-# Function to load the dataset
-def load_dataset():
-    global dataset
-    filepath = filedialog.askopenfilename(title="Select a CSV file", filetypes=(("CSV files", "*.csv"),))
-    if filepath:
-        try:
-            dataset = pd.read_csv(filepath)
-            messagebox.showinfo("Success", "Dataset loaded successfully!")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load dataset: {e}")
-
-# Function to create a Frame for buttons
-def create_button_frame():
-    button_frame = tk.Frame(canvas, bg='')
-    button_frame.place(relx=0.5, rely=0.01, anchor='n')
-
-    # Load Dataset Button
-    load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
-    load_button.pack(pady=5)
-
-    # Search Entry
-    search_entry = tk.Entry(button_frame, width=30, font=('Arial', 14))
-    search_entry.pack(pady=5)
-
-    # Search Button
-    search_button = tk.Button(button_frame, text="Search", command=lambda: fetch_crime_data(search_entry.get()), bg='black', fg='white', height=2)
-    search_button.pack(pady=5)
-
-    # State vs Total Crime Button
-    plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
-    plot_button.pack(pady=5)
-
-    # Crime Type vs Rate Button
-    crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
-    crime_type_button.pack(pady=5)
-
-    # Pie Chart of Crime Rate Button
-    pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
-    pie_chart_button.pack(pady=5)
-
-    # State Safety Classification Button
-    classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
-    classification_button.pack(pady=5)
-
-    # Crime Trend per State Button
-    trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
-    trend_button.pack(pady=5)
-
-    # Toggle Fullscreen Button
-    toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
-    toggle_button.pack(pady=(10, 0))
-
-# Function to search for crime data based on user input and API call
-def fetch_crime_data(query):
-    api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
-    if query:
-        try:
-            api_url = f"https://jsonplaceholder.typicode.com/posts/1"
-            response = requests.get(api_url)
-            response.raise_for_status()
-            crime_data = response.json()
-            if crime_data:
-                display_crime_data(crime_data)
-            else:
-                messagebox.showinfo("Search Results", f"No records found for '{query}'.")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to fetch data from API: {e}")
-    else:
-        messagebox.showerror("Error", "Please enter a state or city name.")
-
-# Function to display fetched crime data
-def display_crime_data(crime_data):
-    formatted_data = f"Crime Data for {crime_data.get('state_name', 'Unknown')}:\n"
-    formatted_data += "\n".join(f"{k}: {v}" for k, v in crime_data.items())
-    messagebox.showinfo("Crime Data", formatted_data)
-
-# Function to display the state vs total crime graph
-def show_state_vs_crime():
-    try:
-        df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
-        states = df_sum_by_state['STATE/UT']
-        total_crime = df_sum_by_state['TOTAL IPC CRIMES']
+        crime_data = response.json()
         
-        fig, ax = plt.subplots()
-        ax.bar(states, total_crime)
-        plt.xticks(rotation=90, ha='right')
-        plt.title('State vs Total Crime Over 10 Years')
-        plt.xlabel('State/UT')
-        plt.ylabel('Total IPC Crimes')
-        plt.tight_layout()
-        plt.show()
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to plot data: {e}")
+        # Extracting data and displaying it
+        user_id = crime_data.get("userId", "Unknown")
+        post_id = crime_data.get("id", "Unknown")
+        title = crime_data.get("title", "No title")
+        body = crime_data.get("body", "No content")
+        
+        formatted_data = (
+            f"Crime Data for {city}:\n\n"
+            f"User ID: {user_id}\n"
+            f"Post ID: {post_id}\n"
+            f"Title: {title}\n"
+            f"Body: {body}\n\n"
+        )
+        
+        # Assess safety based on placeholder content
+        if "reprehenderit" in body:
+            safety_status = f"{city} might not be a safe place."
+        else:
+            safety_status = f"{city} seems safe based on available data."
+        
+        result = formatted_data + safety_status
+        messagebox.showinfo("Crime Data", result)
+        
+        # Simulate yearly crime rate data for demonstration
+        yearly_data = {"2017": 120, "2018": 130, "2019": 125, "2020": 140, "2021": 135, "2022": 145}
+        show_yearly_crime_rate(yearly_data, city)
+        
+    except requests.exceptions.RequestException as e:
+        messagebox.showerror("Error", f"Failed to fetch data from API:\n{e}")
 
-# Placeholder functions for additional buttons
-def show_crime_type_vs_rate():
-    messagebox.showinfo("Info", "Showing Crime Type vs Rate functionality is not implemented yet.")
+# Function to display a yearly crime rate graph
+def show_yearly_crime_rate(yearly_data, city):
+    years = list(yearly_data.keys())
+    rates = list(yearly_data.values())
 
-def show_crime_rate_pie_chart():
-    messagebox.showinfo("Info", "Showing Pie Chart of Crime Rate functionality is not implemented yet.")
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(years, rates, color='skyblue')
+    ax.set_title(f'Yearly Crime Rate in {city}')
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Crime Rate')
 
-def show_state_safety_classification():
-    messagebox.showinfo("Info", "Showing State Safety Classification functionality is not implemented yet.")
+    # Embed the plot in the Tkinter window
+    canvas = FigureCanvasTkAgg(fig, root)
+    canvas.get_tk_widget().pack(pady=20)
+    canvas.draw()
 
-def show_crime_trend_per_state():
-    messagebox.showinfo("Info", "Showing Crime Trend per State functionality is not implemented yet.")
+# GUI Elements
+search_entry = tk.Entry(root, width=30, font=('Arial', 14))
+search_entry.pack(pady=20)
 
-def toggle_fullscreen():
-    root.attributes("-fullscreen", not root.attributes("-fullscreen"))
-
-# Create Canvas for background
-canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  
-canvas.pack(fill="both", expand=True)
-
-# Load the background image
-bg_image = load_background_image()
-
-# Create button frame
-create_button_frame()
+search_button = tk.Button(root, text="Analyze Safety", command=lambda: fetch_crime_data(search_entry.get()))
+search_button.pack(pady=20)
 
 # Start the GUI main loop
 root.mainloop()
