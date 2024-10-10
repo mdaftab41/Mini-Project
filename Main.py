@@ -631,7 +631,7 @@ root.title("Crime Analysis Tool")
 
 # Function to load the background image from an online URL
 def load_background_image():
-    image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"  
+    image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"
     try:
         response = requests.get(image_url)
         response.raise_for_status()
@@ -653,57 +653,33 @@ def load_dataset():
         try:
             dataset = pd.read_csv(filepath)
             messagebox.showinfo("Success", "Dataset loaded successfully!")
-            load_criminal_image("criminal.png")  
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load dataset: {e}")
 
 # Function to create a Frame for buttons
 def create_button_frame():
     button_frame = tk.Frame(canvas, bg='')
-    button_frame.place(relx=0.5, rely=0.01, anchor='n')  
+    button_frame.place(relx=0.5, rely=0.01, anchor='n')
 
     # Load Dataset Button
     load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
-    load_button.pack(pady=5)  # Added padding for spacing
+    load_button.pack(pady=5)
 
     # Search Entry
     search_entry = tk.Entry(button_frame, width=30, font=('Arial', 14))
-    search_entry.pack(pady=5)  # Added padding for spacing
+    search_entry.pack(pady=5)
 
     # Search Button
     search_button = tk.Button(button_frame, text="Search", command=lambda: fetch_crime_data(search_entry.get()), bg='black', fg='white', height=2)
-    search_button.pack(pady=5)  # Added padding for spacing
-
-    # State vs Total Crime Button
-    plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
-    plot_button.pack(pady=5)  # Added padding for spacing
-
-    # Crime Type vs Rate Button
-    crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
-    crime_type_button.pack(pady=5)  # Added padding for spacing
-
-    # Pie Chart of Crime Rate Button
-    pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
-    pie_chart_button.pack(pady=5)  # Added padding for spacing
-
-    # State Safety Classification Button
-    classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
-    classification_button.pack(pady=5)  # Added padding for spacing
-
-    # Crime Trend per State Button
-    trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
-    trend_button.pack(pady=5)  # Added padding for spacing
-
-    # Toggle Fullscreen Button
-    toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
-    toggle_button.pack(pady=(10, 0))  # Added padding for spacing
+    search_button.pack(pady=5)
 
 # Function to search for crime data based on user input and API call
 def fetch_crime_data(query):
+    api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"  # Use the sample API key
     if query:
         try:
-            # Replace with the actual API URL for crime data in India
-            api_url = f"https://api.ncrb.gov.in/crime-data?state={query}"  
+            # Replace with the actual API URL for crime data in India and add API key as a parameter
+            api_url = f"https://api.ncrb.gov.in/crime-data?state={query}&api_key={api_key}"
             response = requests.get(api_url)
             response.raise_for_status()
             crime_data = response.json()
@@ -718,57 +694,9 @@ def fetch_crime_data(query):
 
 # Function to display fetched crime data
 def display_crime_data(crime_data):
-    # Process the crime_data JSON response as needed
     formatted_data = f"Crime Data for {crime_data.get('state_name', 'Unknown')}:\n"
     formatted_data += "\n".join(f"{k}: {v}" for k, v in crime_data.items())
     messagebox.showinfo("Crime Data", formatted_data)
-
-# Function to load criminal image
-def load_criminal_image(image_path):
-    try:
-        img = Image.open(image_path)
-        img = img.resize((200, 200), Image.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        
-        img_label = tk.Label(root, image=img)
-        img_label.image = img  
-        img_label.pack(pady=10)  
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to load image: {e}")
-
-# Function to display the state vs total crime graph
-def show_state_vs_crime():
-    try:
-        df_sum_by_state = dataset.groupby('STATE/UT')['TOTAL IPC CRIMES'].sum().reset_index()
-        states = df_sum_by_state['STATE/UT']
-        total_crime = df_sum_by_state['TOTAL IPC CRIMES']
-        
-        fig, ax = plt.subplots()
-        ax.bar(states, total_crime)
-        plt.xticks(rotation=90, ha='right')
-        plt.title('State vs Total Crime Over 10 Years')
-        plt.xlabel('State/UT')
-        plt.ylabel('Total IPC Crimes')
-        plt.tight_layout()
-        plt.show()
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to plot data: {e}")
-
-# Placeholder functions for additional buttons
-def show_crime_type_vs_rate():
-    messagebox.showinfo("Info", "Showing Crime Type vs Rate functionality is not implemented yet.")
-
-def show_crime_rate_pie_chart():
-    messagebox.showinfo("Info", "Showing Pie Chart of Crime Rate functionality is not implemented yet.")
-
-def show_state_safety_classification():
-    messagebox.showinfo("Info", "Showing State Safety Classification functionality is not implemented yet.")
-
-def show_crime_trend_per_state():
-    messagebox.showinfo("Info", "Showing Crime Trend per State functionality is not implemented yet.")
-
-def toggle_fullscreen():
-    root.attributes("-fullscreen", not root.attributes("-fullscreen"))
 
 # Create Canvas for background
 canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  
@@ -782,4 +710,3 @@ create_button_frame()
 
 # Start the GUI main loop
 root.mainloop()
- 
