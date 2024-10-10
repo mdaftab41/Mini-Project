@@ -613,6 +613,7 @@
 
 # root.mainloop()
 
+
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
@@ -653,7 +654,7 @@ root.attributes('-fullscreen', True)
 root.bind("<Escape>", exit_fullscreen)
 
 # Create a Canvas to hold the background image
-canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())  # Full screen size
+canvas = tk.Canvas(root, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
 canvas.pack(fill="both", expand=True)
 
 # Load the background image from an online URL
@@ -661,77 +662,71 @@ def load_background_image():
     image_url = "https://cdn.pixabay.com/photo/2018/03/15/09/11/zurich-cantonal-police-3227506_1280.jpg"
     try:
         response = requests.get(image_url)
-        response.raise_for_status()  # Check for HTTP errors
+        response.raise_for_status()
         bg_image = Image.open(BytesIO(response.content))
         bg_image = bg_image.resize((root.winfo_screenwidth(), root.winfo_screenheight()), Image.LANCZOS)
         bg_image = ImageTk.PhotoImage(bg_image)
+
         canvas.create_image(0, 0, image=bg_image, anchor="nw")
         return bg_image  # Return the image to keep a reference
     except Exception as e:
         messagebox.showerror("Error", f"Failed to load background image: {e}")
-
-# Function to fetch and display crime data based on user input
-def fetch_crime_data():
-    state_or_city = search_entry.get().strip().upper()
-    if not state_or_city:
-        messagebox.showwarning("Input Error", "Please enter a state or city name.")
-        return
-
-    try:
-        filtered_data = dataset[dataset['STATE/UT'].str.upper() == state_or_city]
-        if filtered_data.empty:
-            messagebox.showinfo("No Data", f"No crime data found for '{state_or_city}'.")
-            return
-        
-        total_crime = filtered_data['TOTAL IPC CRIMES'].sum()
-        messagebox.showinfo("Crime Data", f"Total Crime in {state_or_city}: {total_crime}")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to fetch data: {e}")
 
 # Create a Frame to hold the buttons and align them horizontally
 def create_button_frame():
     button_frame = tk.Frame(canvas, bg='')
     button_frame.place(relx=0.5, rely=0.01, anchor='n')
 
+    # Adding Buttons in a single line (like a navigation bar)
     load_button = tk.Button(button_frame, text="Load Dataset", command=load_dataset, bg='black', fg='white', height=2)
     load_button.pack(side='left', padx=(0, 10))
 
-    search_label = tk.Label(button_frame, text="Enter State/City:", fg='black')
-    search_label.pack(side='left')
+    search_label = tk.Label(button_frame, text="Enter State/City:", bg='black', fg='white')
+    search_label.pack(side='left', padx=(10, 5))
 
-    global search_entry  # Declare search_entry as global to access it in other functions
-    search_entry = tk.Entry(button_frame, width=15)
-    search_entry.pack(side='left', padx=(5, 10))
+    search_entry = tk.Entry(button_frame)
+    search_entry.pack(side='left', padx=(0, 5))
 
-    search_button = tk.Button(button_frame, text="Search", command=fetch_crime_data, bg='black', fg='white', height=2)
-    search_button.pack(side='left', padx=10)
+    search_button = tk.Button(button_frame, text="Search", command=lambda: fetch_crime_data(search_entry.get()), bg='black', fg='white', height=2)
+    search_button.pack(side='left', padx=5)
+
+    plot_button = tk.Button(button_frame, text="State vs Total Crime", command=show_state_vs_crime, bg='black', fg='white', height=2)
+    plot_button.pack(side='left', padx=5)
+
+    crime_type_button = tk.Button(button_frame, text="Crime Type vs Rate", command=show_crime_type_vs_rate, bg='black', fg='white', height=2)
+    crime_type_button.pack(side='left', padx=5)
+
+    pie_chart_button = tk.Button(button_frame, text="Pie Chart of Crime Rate", command=show_crime_rate_pie_chart, bg='black', fg='white', height=2)
+    pie_chart_button.pack(side='left', padx=5)
+
+    classification_button = tk.Button(button_frame, text="State Safety Classification", command=show_state_safety_classification, bg='black', fg='white', height=2)
+    classification_button.pack(side='left', padx=5)
+
+    trend_button = tk.Button(button_frame, text="Crime Trend per State", command=show_crime_trend_per_state, bg='black', fg='white', height=2)
+    trend_button.pack(side='left', padx=5)
 
     toggle_button = tk.Button(button_frame, text="Toggle Fullscreen", command=toggle_fullscreen, bg='black', fg='white', height=2)
     toggle_button.pack(side='left', padx=(10, 0))
 
-# Function to load the image
-def load_criminal_image(image_path):
+# Function to fetch crime data from APIs
+def fetch_crime_data(location):
     try:
-        img = Image.open(image_path)
-        img = img.resize((200, 200), Image.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        
-        img_label = tk.Label(root, image=img)
-        img_label.image = img
-        img_label.pack(pady=10)
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to load image: {e}")
+        # Example API call (replace with actual API URL and API key if required)
+        api_url = f"https://api.usa.gov/crime/fbi/sapi/api/summarized/state/{location}/violent-crime/2019/2020?API_KEY=YOUR_API_KEY"
+        response = requests.get(api_url)
+        response.raise_for_status()
+        data = response.json()
 
-def load_dataset():
-    global dataset
-    filepath = filedialog.askopenfilename(title="Select a CSV file", filetypes=(("CSV files", "*.csv"),))
-    if filepath:
-        try:
-            dataset = pd.read_csv(filepath)
-            messagebox.showinfo("Success", "Dataset loaded successfully!")
-            load_criminal_image("criminal.png")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load dataset: {e}")
+        # Display data in a messagebox or parse it for further use
+        if 'results' in data:
+            crime_info = "\n".join([f"{entry['state']}: {entry['offense']} - {entry['actual']}" for entry in data['results']])
+            messagebox.showinfo("Crime Data", crime_info)
+        else:
+            messagebox.showinfo("Crime Data", "No data found for the specified location.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to fetch crime data: {e}")
+
+# Add other functions here for plotting and handling dataset
 
 # Load the background image and create the button frame
 bg_image = load_background_image()
